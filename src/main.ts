@@ -3,6 +3,7 @@ import { AppModule } from './modules/app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { ConfigsType } from './configuration';
+import { DocumentConfig } from './document.config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -14,6 +15,11 @@ async function bootstrap() {
   const isDevelopmentMode: boolean =
     configService.get<string>('APP_MODE').toUpperCase() == 'DEVELOPMENT';
 
+  isDevelopmentMode && new DocumentConfig(app, port, '/api').setupSwagger();
+
   await app.listen(port);
+
+  isDevelopmentMode &&
+    console.log('Document: http://localhost:' + port + '/api');
 }
 bootstrap();

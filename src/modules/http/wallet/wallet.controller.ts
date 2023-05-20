@@ -1,24 +1,29 @@
-import { Controller, Get, Param, ParseIntPipe, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  ParseIntPipe,
+  Put,
+  UseInterceptors,
+} from '@nestjs/common';
 import { WalletService } from './wallet.service';
-import { ApiGetBalance } from './docs/balance.doc';
 import { ApiTags } from '@nestjs/swagger';
-
+import { ResponseInterceptor } from 'src/shared/interceptors/response.interceptor';
+import { AddMoneyDto } from './dtos/addMoney.dto';
+import { ApiAddMoney } from './docs/addMoney.doc';
 @ApiTags('Wallet')
+@UseInterceptors(ResponseInterceptor)
 @Controller('/wallet')
 export class WalletController {
   constructor(private walletService: WalletService) {}
 
-  @ApiGetBalance()
-  @Get('/balance')
-  getBalance(@Param('userId', ParseIntPipe) userId: number) {
-    return 0;
-  }
-
-  @Put('/money')
+  // todo use Auth & Role Guard
+  @ApiAddMoney()
+  @Put('/:userId/money')
   addMoney(
     @Param('userId', ParseIntPipe) userId: number,
-    @Param('amount', ParseIntPipe) amount: number,
+    @Body() data: AddMoneyDto,
   ) {
-    return 0;
+    return this.walletService.addMoney(userId, data.amount);
   }
 }

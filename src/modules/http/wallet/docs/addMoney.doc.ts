@@ -1,5 +1,6 @@
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -10,10 +11,15 @@ export function ApiAddMoney() {
     ApiOperation({ summary: 'add Money' }),
     ApiOkResponse({
       schema: {
-        example: {},
+        example: {
+          statusCode: HttpStatus.OK,
+          data: {
+            referenceId: '9de9x584y2b',
+          },
+        },
       },
     }),
-    ApiNotFoundResponse({
+    ApiBadRequestResponse({
       schema: {
         example: {
           statusCode: HttpStatus.BAD_REQUEST,

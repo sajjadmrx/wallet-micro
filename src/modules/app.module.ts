@@ -3,6 +3,7 @@ import configuration from '../configuration';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { HttpModule } from './http/http.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { HttpModule } from './http/http.module';
       load: [configuration],
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     HttpModule,
   ],

@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { Wallet } from '../../../shared/interfaces/wallet.interface';
 import { getRandomString } from '../../../shared/utils/uuid.util';
 import { Transaction } from '../../../shared/interfaces/transaction.interface';
+import Decimal from 'decimal.js';
 
 @Injectable()
 export class WalletRepository {
@@ -15,7 +16,13 @@ export class WalletRepository {
       },
     });
   }
-
+  async getTotalTransactionAmounts(): Promise<{ amount: Decimal }[]> {
+    return await this.db.transaction.findMany({
+      select: {
+        amount: true,
+      },
+    });
+  }
   async addMoney(
     ownerId: number,
     transactionAmount: number,

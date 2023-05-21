@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { WalletRepository } from './wallet.repository';
 import { Wallet } from 'src/shared/interfaces/wallet.interface';
 import Decimal from 'decimal.js';
@@ -30,5 +34,14 @@ export class WalletService {
     } catch (e) {
       throw e;
     }
+  }
+
+  async getUserBalance(userId: number) {
+    let wallet: Wallet | null = await this.walletRepo.findByOwnerId(userId);
+    if (!wallet) throw new NotFoundException('wallet is not found');
+
+    return {
+      balance: Number(wallet.balance),
+    };
   }
 }

@@ -19,59 +19,96 @@ describe('Wallet e2e', function () {
     await prismaService.transaction.deleteMany();
     await prismaService.wallet.deleteMany();
   });
+  describe('PUT /{userId}/money', function () {
+    it('should add money to user wallet', async () => {
+      const userId = 1;
+      const amount = '10';
 
-  it('should add money to user wallet', async () => {
-    const userId = 1;
-    const amount = '10';
+      const response = await request(app.getHttpServer())
+        .put(`/wallet/${userId}/money`)
+        .send({ amount })
+        .expect(200);
 
-    const response = await request(app.getHttpServer())
-      .put(`/wallet/${userId}/money`)
-      .send({ amount })
-      .expect(200);
+      expect(response.body.data).toHaveProperty('referenceId');
+    });
+    it('should create a new wallet if none exists for the user', async () => {
+      const userId = 12345;
+      const amount = '10';
 
-    expect(response.body.data).toHaveProperty('referenceId');
-  });
-  it('should create a new wallet if none exists for the user', async () => {
-    const userId = 12345;
-    const amount = '10';
+      const response = await request(app.getHttpServer())
+        .put(`/wallet/${userId}/money`)
+        .send({ amount })
+        .expect(200);
 
-    const response = await request(app.getHttpServer())
-      .put(`/wallet/${userId}/money`)
-      .send({ amount })
-      .expect(200);
-
-    expect(response.body.data).toHaveProperty('referenceId');
-  });
-
-  it('should throw BadRequestException for negative amount', async () => {
-    const userWallet = await prismaService.wallet.create({
-      data: {
-        ownerId: 1,
-        balance: 5,
-      },
+      expect(response.body.data).toHaveProperty('referenceId');
     });
 
-    const userId = userWallet.ownerId;
-    const amount = '-10';
+    it('should throw BadRequestException for negative amount', async () => {
+      const userWallet = await prismaService.wallet.create({
+        data: {
+          ownerId: 1,
+          balance: 5,
+        },
+      });
 
-    await request(app.getHttpServer())
-      .put(`/wallet/${userId}/money`)
-      .send({ amount })
-      .expect(400);
-  });
+      const userId = userWallet.ownerId;
+      const amount = '-10';
 
-  it('should throw InternalServerErrorException for database connection', async function () {
-    jest.spyOn(prismaService.wallet, 'update').mockImplementation(() => {
-      throw new Error('Database connection error');
+      await request(app.getHttpServer())
+        .put(`/wallet/${userId}/money`)
+        .send({ amount })
+        .expect(400);
     });
 
-    const userId = 1;
-    const amount = '999';
+    it('should throw InternalServerErrorException for database connection', async function () {
+      jest.spyOn(prismaService.wallet, 'update').mockImplementation(() => {
+        throw new Error('Database connection error');
+      });
 
-    const response = await request(app.getHttpServer())
-      .put(`/wallet/${userId}/money`)
-      .send({ amount });
+      const userId = 1;
+      const amount = '999';
 
-    expect(response.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+      const response = await request(app.getHttpServer())
+        .put(`/wallet/${userId}/money`)
+        .send({ amount });
+
+      expect(response.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+    });
+  });
+
+  describe('GET /{userId}/balance', function () {
+    it('should return user balance', async () => {
+      const userWallet = await prismaService.wallet.create({
+        data: {
+          ownerId: 1,
+          balance: 50,
+        },
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/wallet/${userWallet.ownerId}/balance`)
+        .expect(200);
+
+      expect(response.body.data).toHaveProperty('balance');
+      expect(typeof response.body.data.balance).toEqual('number');
+    });
+
+    it('should throw NotFoundException if wallet is not found', async () => {
+      const userId = 12345;
+      await request(app.getHttpServer())
+        .get(`/wallet/${userId}/balance`)
+        .expect(404);
+    });
+
+    it('should throw InternalServerErrorException', async () => {
+      jest.spyOn(prismaService.wallet, 'findUnique').mockImplementation(() => {
+        throw new Error('Database connection error');
+      });
+      const response = await request(app.getHttpServer()).get(
+        `/wallet/${1}/balance`,
+      );
+
+      expect(response.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+    });
   });
 });

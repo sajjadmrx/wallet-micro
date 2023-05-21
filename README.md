@@ -10,3 +10,9 @@ docker-compose --profile product up
 ```shell
 docker-compose --profile test up
 ```
+
+### Document 
+```shell
+http://localhost:{hostPort}/api
+```
+

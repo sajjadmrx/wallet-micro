@@ -37,3 +37,4 @@ db-data
 db-data_e2e
 mysql-data_e2e
 .env
+db-data-test

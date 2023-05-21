@@ -32,7 +32,44 @@ services:
       - ./db-data:/var/lib/mysql
     profiles:
       - "product"
-
-
+  mysqldb_test:
+    image: mysql:5.7
+    restart: always
+    env_file:
+      - .env.test
+    ports:
+      - "${MYSQL_TEST_PORT}:3306"
+    expose:
+      - 3306
+    environment:
+      MYSQL_DATABASE: test
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+      MYSQL_ROOT_PASSWORD: test
+      SERVICE_TAGS: test
+      SERVICE_NAME: mysqldb_test
+    volumes:
+      - ./db-data-test:/var/lib/mysql
+    profiles:
+      - test
+    networks:
+      - test-network
+  e2e_tests:
+    build: .
+    env_file:
+      - .env.test
+    depends_on:
+      - mysqldb_test
+    command: npm run test:e2e
+    environment:
+      - DATABASE_URL=mysql://test:test@mysqldb_test:${MYSQL_TEST_PORT}/test
+    networks:
+      - test-network
+    profiles:
+      - test
 volumes:
   mysql-data:
+  mysql-data_e2e:
+
+networks:
+  test-network:

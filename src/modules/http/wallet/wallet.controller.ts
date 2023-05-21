@@ -17,7 +17,6 @@ import { ApiAddMoney } from './docs/addMoney.doc';
 export class WalletController {
   constructor(private walletService: WalletService) {}
 
-  // todo use Auth & Role Guard
   @ApiAddMoney()
   @Put('/:userId/money')
   addMoney(

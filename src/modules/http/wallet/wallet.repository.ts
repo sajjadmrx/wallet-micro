@@ -8,7 +8,7 @@ import { Transaction } from '../../../shared/interfaces/transaction.interface';
 export class WalletRepository {
   constructor(private db: PrismaService) {}
 
-  async findByOwnerI(ownerId: number): Promise<Wallet | null> {
+  async findByOwnerId(ownerId: number): Promise<Wallet | null> {
     return this.db.wallet.findUnique({
       where: {
         ownerId,
@@ -16,7 +16,7 @@ export class WalletRepository {
     });
   }
 
-  async AddMoney(
+  async addMoney(
     ownerId: number,
     transactionAmount: number,
     amount: number,
